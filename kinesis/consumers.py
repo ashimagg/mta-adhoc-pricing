@@ -19,8 +19,7 @@ class KinesisConsumer:
         raise NotImplementedError
 
     @staticmethod
-    def iter_records(records):
-        print ("Num of records - " + str(len(records)))
+    def iter_records(records):        
         for record in records:
             part_key = record['PartitionKey']
             data = record['Data']
@@ -41,10 +40,12 @@ class KinesisConsumer:
                 response = kinesis.get_records(ShardIterator = next_iterator, Limit=25)
 
                 records = response['Records']
+                print("Shard")
                 print ("Records - " + str(len(records)))
                 if records:
                     self.process_records(records)
-
+                if 'NextShardIterator' not in response:
+                    break
                 next_iterator = response['NextShardIterator']
                 time.sleep(self.sleep_interval)
             except ProvisionedThroughputExceededException as ptee:
@@ -57,7 +58,7 @@ class KinesisConsumer:
 
 session = boto3.Session(profile_name='ash')
 kinesis = session.client('kinesis')
-shard_id = 'shardId-000000000010'
+shard_id = 'shardId-000000000020'
 iterator_type = 'LATEST'
 stream_name = "mta-data"
 worker = KinesisConsumer(stream_name, shard_id, iterator_type, worker_time=10)
