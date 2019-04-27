@@ -5,7 +5,8 @@ import threading
 import boto3
 session = boto3.Session(profile_name='ashim')
 kinesis = session.client('kinesis')
-import pdb
+
+
 
 
 # from kinesis.exceptions import ResourceNotFoundException
@@ -26,8 +27,7 @@ class KinesisProducer(threading.Thread):
 		"""put a single record to the stream"""
 		timestamp = datetime.datetime.utcnow()
 		part_key = self.ip_addr
-		data = timestamp.isoformat()
-		# kinesis = kinesis.connect_to_region("us-east-1")
+		data = str(part_key)+" : "+str(timestamp.isoformat()) 
 		kinesis.put_record(StreamName=self.stream_name,Data=data, PartitionKey = part_key)
 
 	def run_continously(self):
@@ -50,6 +50,7 @@ class KinesisProducer(threading.Thread):
 		#     print('stream {} not found. Exiting'.format(self.stream_name))
 
 producer1 = KinesisProducer("mta-data", sleep_interval=2, ip_addr='8.8.8.8')
+producer2 = KinesisProducer("mta-data", sleep_interval=2, ip_addr='0.0.0.0')
 # producer2 = KinesisProducer("mta-data", sleep_interval=5, ip_addr='8.8.8.9')
 producer1.start()
-# producer2.start()
+producer2.start()
