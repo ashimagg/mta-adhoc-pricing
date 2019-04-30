@@ -64,5 +64,6 @@ shard_id = 'shardId-000000000000'
 iterator_type = 'LATEST'
 # stream_name = "DLine"
 
-for line in subwayLines:
-    KinesisConsumer(line, shard_id, iterator_type, worker_time=10).run()
+consumer = KinesisConsumer(line, shard_id, iterator_type, worker_time=10)
+consumer.run()
+
