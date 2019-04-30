@@ -1,12 +1,13 @@
 import datetime
 import time
 import threading
+from properties import subwayLines, profileName
 
 import boto3
-session = boto3.Session(profile_name='ashim')
+session = boto3.Session(profile_name=profileName)
 kinesis = session.client('kinesis')
 
-from common import subwayLines
+
 
 print(subwayLines)
 
@@ -40,10 +41,11 @@ class KinesisProducer(threading.Thread):
 	def run(self):
 		"""run the producer"""
 		try:
-			if self.sleep_interval:
-				self.run_continously()
-			else:
-				self.put_record()
+			self.run_continously()
+			# if self.sleep_interval:
+			# 	self.run_continously()
+			# else:
+			# 	self.put_record()
 		except Exception as e:
 			print(e)
 			# print('stream {} not found. Exiting'.format(self.stream_name))
@@ -57,5 +59,5 @@ class KinesisProducer(threading.Thread):
 # producer2.start()
 
 for line in subwayLines:
-	KinesisProducer(line, sleep_interval=1, ip_addr=line).start()
+	KinesisProducer(line, sleep_interval=0, ip_addr=line).start()
 

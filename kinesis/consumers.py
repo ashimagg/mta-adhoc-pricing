@@ -3,6 +3,8 @@ import datetime
 import boto3
 import time
 
+from properties import subwayLines, profileName
+
 class KinesisConsumer:
     """Generic Consumer for Amazon Kinesis Streams"""
     def __init__(self, stream_name, shard_id, iterator_type,
@@ -56,10 +58,11 @@ class KinesisConsumer:
         for part_key, data in self.iter_records(records):
             print(part_key, ":", data)
 
-session = boto3.Session(profile_name='ash')
+session = boto3.Session(profile_name=profileName)
 kinesis = session.client('kinesis')
-shard_id = 'shardId-000000000020'
+shard_id = 'shardId-000000000000'
 iterator_type = 'LATEST'
-stream_name = "mta-data"
-worker = KinesisConsumer(stream_name, shard_id, iterator_type, worker_time=10)
-worker.run()
+# stream_name = "DLine"
+
+for line in subwayLines:
+    KinesisConsumer(line, shard_id, iterator_type, worker_time=10).run()
