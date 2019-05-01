@@ -13,6 +13,7 @@ class Kafka(threading.Thread):
 		consumer = KafkaConsumer(self.stream_name, bootstrap_servers='localhost:9092')
 		for msg in consumer:
 			print(self.stream_name, msg.value.decode())
+			print("\n\n\n\n\n\n")
 
 	def run(self):
 		try:
@@ -20,5 +21,6 @@ class Kafka(threading.Thread):
 		except Exception as e:
 			print(e)
 
-for line in subwayLines:
-	Kafka(line, sleep_interval=0).start()
+# for line in subwayLines:
+# 	Kafka(line, sleep_interval=0).start()
+Kafka("RLine", sleep_interval=0).start()

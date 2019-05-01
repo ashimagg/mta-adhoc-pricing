@@ -1,1 +1,1 @@
-subwayLines = ["DLine","FLine","MLine","NLine","QLine","RLine","WLine"]
+subwayLines = ["DLine","FLine","MLine","QLine","RLine","WLine"]
