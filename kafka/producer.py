@@ -15,15 +15,32 @@ class KafkaProducer(threading.Thread):
 		super().__init__()
 
 	def put_record(self, data):
-		producer.send(self.stream_name, data.encode())
+		dataItems = ""
+		for item in data:
+			dataItems+=item[0]+"\n"
+
+		producer.send(self.stream_name, dataItems.encode())
 		
 	def read_file(self):
 		with open('../data/processed_data/'+self.stream_name+'.csv') as csvfile:
 			readCSV = csv.reader(csvfile, delimiter='\n')
+			prevTime = 0
+			timeSlot = []
+
 			for index,row in enumerate(readCSV):
 				if index>0:
-					self.put_record(row[0])
-					time.sleep(self.sleep_interval)
+					currenTime=row[0].split(',')[3]
+					if(prevTime != currenTime):
+						if(timeSlot):
+							self.put_record(timeSlot)
+						time.sleep(self.sleep_interval)
+						timeSlot = []
+						prevTime = currenTime
+						timeSlot.append(row)
+					else:
+						timeSlot.append(row)
+					
+
 
 	def run(self):
 		try:
@@ -34,3 +51,5 @@ class KafkaProducer(threading.Thread):
 
 for line in subwayLines:
 	KafkaProducer(line, sleep_interval=0.5).start()
+
+# KafkaProducer("RLine", sleep_interval=0.5).start()
