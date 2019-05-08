@@ -17,9 +17,11 @@ class KafkaProducer(threading.Thread):
 	def put_record(self, data):
 		dataItems = ""
 		for item in data:
-			dataItems+=item[0]+"\n"
+			#dataItems += item[0] 
+			dataItems = dataItems + item[0].split(',')[-2] + "," + item[0].split(',')[-2] + "\n"
+		#print(dataItems)
 
-		producer.send(self.stream_name, dataItems.encode())
+		producer.send(self.stream_name, str(dataItems).encode())
 		
 	def read_file(self):
 		with open('../data/processed_data/'+self.stream_name+'.csv') as csvfile:
@@ -29,7 +31,7 @@ class KafkaProducer(threading.Thread):
 
 			for index,row in enumerate(readCSV):
 				if index>0:
-					currenTime=row[0].split(',')[3]
+					currenTime = row[0].split(',')[3]
 					if(prevTime != currenTime):
 						if(timeSlot):
 							self.put_record(timeSlot)
@@ -39,8 +41,6 @@ class KafkaProducer(threading.Thread):
 						timeSlot.append(row)
 					else:
 						timeSlot.append(row)
-					
-
 
 	def run(self):
 		try:
