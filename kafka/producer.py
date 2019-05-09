@@ -50,6 +50,6 @@ class KafkaProducer(threading.Thread):
 
 
 for line in subwayLines:
-	KafkaProducer(line, sleep_interval=0.5).start()
+	KafkaProducer(line, sleep_interval = 10).start()
 
 # KafkaProducer("RLine", sleep_interval=0.5).start()
