@@ -17,8 +17,9 @@ class KafkaProducer(threading.Thread):
 	def put_record(self, data):
 		dataItems = ""
 		for item in data:
-			#dataItems += item[0] 
-			dataItems = dataItems + item[0].split(',')[-2] + "," + item[0].split(',')[-2] + "\n"
+			#dataItems += item[0]
+			#print(item[0].split(','))
+			dataItems = dataItems + item[0].split(',')[1] + "," + item[0].split(',')[-2] + "," + item[0].split(',')[-1] + "\n"
 		#print(dataItems)
 
 		producer.send(self.stream_name, str(dataItems).encode())
@@ -51,5 +52,4 @@ class KafkaProducer(threading.Thread):
 
 for line in subwayLines:
 	KafkaProducer(line, sleep_interval = 10).start()
-
-# KafkaProducer("RLine", sleep_interval=0.5).start()
+#KafkaProducer("RLine", sleep_interval=0.5).start()

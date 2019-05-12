@@ -63,19 +63,37 @@ if(not rdd.isEmpty()):
 '''
 
 def toRow(records):
-    global entries
     #global exits
     entries = []
     exits = []
-    record_list = records.split('\n')
+    stations = []
+
+    rdd_str = records.take(records.count())
+    record_list = rdd_str[0].split('\n')
     #print(record_list)
     for record in record_list:
         record_set = record.split(",")
         if len(record_set)>1:    
-            entries.append(record_set[0])
-            exits.append(record_set[1])
-    print(entries)
-    #return entries
+            stations.append(record_set[0])
+            entries.append(record_set[1])
+            exits.append(record_set[2])
+    return stations,entries,exits
+
+def process_df(df):
+    df = df.withColumn("entries", df["entries"].cast(DoubleType()))
+    df = df.withColumn("exits", df["exits"].cast(DoubleType()))
+    
+    from pyspark.sql.window import Window
+    window = Window.orderBy("id").rangeBetween(-2, 2)
+    from pyspark.sql import functions as F
+    df = df.withColumn('entries', df.entries/F.sum("entries").over(window))
+    df = df.withColumn('exits', df.exits/F.sum("exits").over(window))
+    #df = df.withColumn('entries_norm', F.sum("entries").over(window))
+    #df = df.withColumn('exit_norm', F.sum("exits").over(window))
+
+
+    return df
+    
     #df = sql_context.createDataFrame(data=zip(entries, exits), schema=['entries', 'exits'])
     #df.show()
     #print("Yo")
@@ -84,14 +102,16 @@ def toRow(records):
     #df.show()
     #return entries,exits
 
+
 def process(rdd):
     if not rdd.isEmpty():
-        rdd.foreach(toRow)
-        global entries
+        stations,entries,exits = toRow(rdd)
         #global exits
+        id_list = list(range(len(entries)))
+        df = sql_context.createDataFrame(data=zip(id_list,stations,entries, exits), schema=['id','stations','entries', 'exits'])
         
-        print(entries)
-        #df = sql_context.createDataFrame(data=zip(entries, exits), schema=['entries', 'exits'])
+        transformed_df = process_df(df)
+        transformed_df.show()
         #df = rdd.toDF()
         #print(rdd.__dir__())
     else:
