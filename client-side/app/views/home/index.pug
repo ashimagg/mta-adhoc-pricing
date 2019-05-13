@@ -1,0 +1,25 @@
+extends ../layouts/default.pug
+
+block page-header
+  h2 Place Your Bid
+
+block content
+  ol
+    - if (stations.length)
+    table(class="table")
+      thead
+        tr
+          th(scope="col") #
+          th(scope="col") Station Name
+          th(scope="col") Price 1($)
+          th(scope="col") Price 2($)
+          th(scope="col") Place Bid
+      tbody
+        each station, index in stations
+          tr
+            th #{index+1}
+            td #{station.Station_name}
+            td #{station.price1}
+            td #{station.price2}
+            td
+              button Place Bid
