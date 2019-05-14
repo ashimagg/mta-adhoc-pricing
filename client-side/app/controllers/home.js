@@ -1,0 +1,6 @@
+exports.index = function(req, res) {
+  res.render('home/index', {
+    title: 'MTA Bidding system',
+    stations:[]
+  });
+};
