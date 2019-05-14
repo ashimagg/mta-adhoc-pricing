@@ -1,5 +1,5 @@
 # sudo /Users/aviator/spark-2.4.0-bin-hadoop2.7/bin/spark-submit --packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.4.2 stream.py
-
+# Mac sux
 import os
 os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.4.2 pyspark-shell'
 from pyspark.sql import SQLContext, Row, SparkSession
@@ -35,32 +35,6 @@ kafkaStream = KafkaUtils.createStream(ssc, 'localhost:2181', 'subway-group', {'R
 parsed = kafkaStream.map(lambda v: v.split('\n'))
 print(parsed)
 
-'''
-def toRow(record):
-    # print("************************************************************************")
-    # print("type: ", type(record))
-    # print(record)
-    # print("************************************************************************")
-    record_list = record.split('\n'))
-    #return record.split(",") # Row()
-    for rec in record_list:
-        print(regexp_replace)
-
-'''
-
-
-'''
-def process(rdd):
-if(not rdd.isEmpty()):
-        rdd_row = rdd.map(toRow)
-        header = rdd_row.first()
-        df = rdd_row.toDF(row_header)
-        rdd_row.foreach(f)
-        print(rdd_row.__dir__())
-        #rdd_row.printSchema()
-        #df.show()
-        
-'''
 
 def toRow(records):
     #global exits
