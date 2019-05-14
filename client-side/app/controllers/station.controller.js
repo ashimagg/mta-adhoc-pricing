@@ -10,7 +10,7 @@ exports.findAll = (req, res) => {
 
     Station.find()
         .then(stations => {
-            
+        debugger;   
 
             res.render('home/index', {
                 title: 'MTA Bidding system',
