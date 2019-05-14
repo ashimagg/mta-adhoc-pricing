@@ -9,7 +9,7 @@ from pyspark.streaming.kafka import KafkaUtils
 from pyspark.sql import SQLContext
 from pyspark.sql.types import *
 from pyspark.sql.functions import *
-
+from collections import OrderedDict
 
 
 
@@ -64,20 +64,18 @@ if(not rdd.isEmpty()):
 
 def toRow(records):
     #global exits
-    entries = []
-    exits = []
-    stations = []
 
+    rows = []
     rdd_str = records.take(records.count())
     record_list = rdd_str[0].split('\n')
     #print(record_list)
+    id_ = 0
     for record in record_list:
         record_set = record.split(",")
+        id_ += 1
         if len(record_set)>1:    
-            stations.append(record_set[0])
-            entries.append(record_set[1])
-            exits.append(record_set[2])
-    return stations,entries,exits
+            rows.append([id_,record_set[0],float(record_set[1]),float(record_set[2])])
+    return rows
 
 def process_df(df):
     df = df.withColumn("entries", df["entries"].cast(DoubleType()))
@@ -86,30 +84,21 @@ def process_df(df):
     from pyspark.sql.window import Window
     window = Window.orderBy("id").rangeBetween(-2, 2)
     from pyspark.sql import functions as F
-    df = df.withColumn('entries', df.entries/F.sum("entries").over(window))
-    df = df.withColumn('exits', df.exits/F.sum("exits").over(window))
-    #df = df.withColumn('entries_norm', F.sum("entries").over(window))
-    #df = df.withColumn('exit_norm', F.sum("exits").over(window))
+    df = df.withColumn('price1', 10*df.entries*df.entries/F.sum("entries").over(window))
+    df = df.withColumn('price2', (10*df.entries*df.entries/F.sum("entries").over(window) + 10*df.exits*df.exits/F.sum("exits").over(window)/2))
 
-
-    return df
-    
-    #df = sql_context.createDataFrame(data=zip(entries, exits), schema=['entries', 'exits'])
-    #df.show()
-    #print("Yo")
-    #l = [('Alice', 1)]
-    #df = sql_context.createDataFrame(l, ['name', 'age']).collect()
-    #df.show()
-    #return entries,exits
-
+    return df 
 
 def process(rdd):
     if not rdd.isEmpty():
-        stations,entries,exits = toRow(rdd)
+        rows = toRow(rdd)
         #global exits
-        id_list = list(range(len(entries)))
-        df = sql_context.createDataFrame(data=zip(id_list,stations,entries, exits), schema=['id','stations','entries', 'exits'])
         
+        #df = sql_context.createDataFrame(data=OrderedDict( { 'foo': pd.Series(foo), 'bar': pd.Series(bar) } ), schema=['id','stations','entries', 'exits'])
+        cSchema = StructType([StructField("ID", IntegerType()),StructField("Station", StringType()),StructField("entries", DoubleType()),StructField("exits", DoubleType())])
+
+        df = sql_context.createDataFrame(rows,schema=cSchema) 
+
         transformed_df = process_df(df)
         transformed_df.show()
         #df = rdd.toDF()
