@@ -43,7 +43,7 @@ sc.setLogLevel("ERROR")
 sql_context = SQLContext(sc)
 '''
 #will create batch for 30sec
-ssc = StreamingContext(sc, 3)
+ssc = StreamingContext(sc, 20)
 
 kafkaStream = KafkaUtils.createStream(ssc, 'localhost:2181', 'subway-group', {'RLine':1})
 
@@ -60,9 +60,8 @@ def write_to_mongo(df):
     # .load()
     # df01.show()
     
-    
     df.write.format("com.mongodb.spark.sql.DefaultSource")\
-        .mode("append")\
+        .mode("overwrite")\
         .option("database","test")\
         .option("collection", "stations")\
         .save()
@@ -90,8 +89,8 @@ def process_df(df):
     from pyspark.sql.window import Window
     window = Window.orderBy("id").rangeBetween(-2, 2)
     from pyspark.sql import functions as F
-    df = df.withColumn('price1', 10*df.entries*df.entries/F.sum("entries").over(window))
-    df = df.withColumn('price2', (10*df.entries*df.entries/F.sum("entries").over(window) + 10*df.exits*df.exits/F.sum("exits").over(window)/2))
+    df = df.withColumn('price1', round(df.entries*df.entries/F.sum("entries").over(window),2))
+    df = df.withColumn('price2', round((df.entries*df.entries/F.sum("entries").over(window) + df.exits*df.exits/F.sum("exits").over(window)/2),2))
 
     return df 
 
@@ -106,7 +105,7 @@ def process(rdd):
         df = sql_context.createDataFrame(rows,schema=cSchema) 
 
         transformed_df = process_df(df)
-        #transformed_df.show()
+        transformed_df.show()
         write_to_mongo(transformed_df)
         #df = rdd.toDF()
         #print(rdd.__dir__())
@@ -122,13 +121,3 @@ lines.foreachRDD(process)
 ssc.start()
 #will terminate after 3 min
 ssc.awaitTermination(timeout=180)
-
-'''
-['func', 
-'preservesPartitioning', 
-'_prev_jrdd', '_prev_jrdd_deserializer', 'is_cached', 'is_checkpointed'
-, 'ctx', 'prev', '_jrdd_val', '_id', '_jrdd_deserializer', '_bypass_serializer', 'partitioner', 'is_barrier', '__module__', '__doc__', '__init__',
- 'getNumPartitions', '_jrdd', 'id', '_is_pipelinable', '_is_barrier', '_pickled', '__repr__', '__getnewargs__', 'context', 'cache', 'persist', 'unpersist', 'checkpoint', 'isCheckpointed', 'localCheckpoint', 
- 'isLocallyCheckpointed', 'getCheckpointFile', 'map', 'flatMap', 'mapPartitions', 'mapPartitionsWithIndex', 'mapPartitionsWithSplit', 'filter', 'distinct', 'sample', 'randomSplit', 'takeSample', 
- '_computeFractionForSampleSize', 'union', 'intersection', '_reserialize', '__add__', 'repartitionAndSortWithinPartitions', 'sortByKey', 'sortBy', 'glom', 'cartesian', 'groupBy', 'pipe', 'foreach', 'foreachPartition', 'collect', 'reduce', 'treeReduce', 'fold', 'aggregate', 'treeAggregate', 'max', 'min', 'sum', 'count', 'stats', 'histogram', 'mean', 'variance', 'stdev', 'sampleStdev', 'sampleVariance', 'countByValue', 'top', 'takeOrdered', 'take', 'first', 'isEmpty', 'saveAsNewAPIHadoopDataset', 'saveAsNewAPIHadoopFile', 'saveAsHadoopDataset', 'saveAsHadoopFile', 'saveAsSequenceFile', 'saveAsPickleFile', 'saveAsTextFile', 'collectAsMap', 'keys', 'values', 'reduceByKey', 'reduceByKeyLocally', 'countByKey', 'join', 'leftOuterJoin', 'rightOuterJoin', 'fullOuterJoin', 'partitionBy', 'combineByKey', 'aggregateByKey', 'foldByKey', '_memory_limit', 'groupByKey', 'flatMapValues', 'mapValues', 'groupWith', 'cogroup', 'sampleByKey', 'subtractByKey', 'subtract', 'keyBy', 'repartition', 'coalesce', 'zip', 'zipWithIndex', 'zipWithUniqueId', 'name', 'setName', 'toDebugString', 'getStorageLevel', '_defaultReducePartitions', 'lookup', '_to_java_object_rdd', 'countApprox', 'sumApprox', 'meanApprox', 'countApproxDistinct', 'toLocalIterator', 'barrier', '__dict__', '__weakref__', 'toDF', '__hash__', '__str__', '__getattribute__', '__setattr__', '__delattr__', '__lt__', '__le__', '__eq__', '__ne__', '__gt__', '__ge__', '__new__', '__reduce_ex__', '__reduce__', '__subclasshook__', '__init_subclass__', '__format__', '__sizeof__', '__dir__', '__class__']
- '''

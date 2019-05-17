@@ -11,10 +11,12 @@ block content
         tr
           th(scope="col") #
           th(scope="col") Station Name
-          th(scope="col") Subsidies Price ($)
-          th(scope="col") Advertising Price ($)
-          th(scope="col") Place Bid On Subsidies
-          th(scope="col") Place Bid on Hard Advertising
+          th(scope="col") In Coach Price ($)
+          th(scope="col") Bill Board ($)
+          th(scope="col") Entries 
+          th(scope="col") Exits
+          th(scope="col") Place Bid On In-Coach Price
+          th(scope="col") Place Bid on Bill Board Price
       tbody
         each station, index in stations
           tr
@@ -22,6 +24,8 @@ block content
             td #{station.Station_name}
             td #{station.price1} 
             td #{station.price2}
+            td #{station.entries} 
+            td #{station.exits}
             td
               button Place Bid 
             td
